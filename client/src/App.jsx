@@ -6,9 +6,9 @@ import SignUp from "./pages/SignUp";
 function App() {
   return(
       <Routes>
-        <Route path="/" element={<TeacherDashboard />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/teacher" element={<TeacherDashboard />} />
       </Routes>
   );
 }

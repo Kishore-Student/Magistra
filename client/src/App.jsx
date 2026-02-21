@@ -1,8 +1,15 @@
+import { Routes , Route} from "react-router-dom";
+import TeacherDashboard from "./pages/Teacher/TDashborad";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+
 function App() {
   return(
-  <div className="bg-gray-100 min-h-screen">
-    <h1 className="text-2xl font-bold text-center py-4">Welcome to Magistra</h1>
-  </div>
+      <Routes>
+        <Route path="/" element={<TeacherDashboard />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Routes>
   );
 }
 

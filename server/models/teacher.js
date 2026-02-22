@@ -14,7 +14,7 @@ const teacherSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    class: {
+    classAssigned: {
         type: String,
         required: true
     },
@@ -23,7 +23,7 @@ const teacherSchema = new mongoose.Schema({
         enum: ["Teacher", "Administrator"],
         required: true
     }
-});
+}, { timestamps: true });
 
 const Teacher = mongoose.model("Teacher", teacherSchema);
 

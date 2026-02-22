@@ -13,7 +13,7 @@ const studentSchema = new mongoose.Schema({
         type: Number,
         default: 0
     }
-});
+}, { timestamps: true });
 
 const Student = mongoose.model("Student", studentSchema);
 export default Student;

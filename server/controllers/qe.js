@@ -40,7 +40,7 @@ export const explainController = async (req, res) => {
 
 export const quizController = async (req, res) => {
   try {
-    const { topic, questionCount } = req.body;
+    const { topic, questionCount, language } = req.body;
 
     if (!topic || !questionCount) {
       return res.status(400).json({
@@ -49,22 +49,21 @@ export const quizController = async (req, res) => {
       });
     }
 
-    // AI response
-    const aiResponse = await generateQuiz(topic, questionCount);
+    // Pass language instruction clearly
+    const aiResponse = await generateQuiz(
+      topic,
+      questionCount,
+      language || "en"
+    );
 
-    // aiResponse.quiz is a STRING with ```json ... ```
-    let raw = aiResponse.quiz;
-
-    // Remove markdown code block
-    raw = raw.replace(/```json|```/g, "").trim();
-
-    // Parse JSON
+    let raw = aiResponse.replace(/```json|```/g, "").trim();
     const parsedQuiz = JSON.parse(raw);
 
-    // Convert to frontend-compatible format
     const questions = parsedQuiz.questions.map(q => ({
       q: q.question,
-      options: q.options.map(opt => opt.replace(/^[A-D]\)\s*/, "")),
+      options: q.options.map(opt =>
+        opt.replace(/^[A-D]\)\s*/, "")
+      ),
       answer: q.options.findIndex(
         opt => opt === q.correctAnswer
       )
@@ -72,19 +71,14 @@ export const quizController = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      title: parsedQuiz.topic,
-      classLevel: parsedQuiz.classLevel,
       questions
     });
 
   } catch (error) {
     console.error("Quiz generation error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to generate quiz"
     });
   }
 };
-
-

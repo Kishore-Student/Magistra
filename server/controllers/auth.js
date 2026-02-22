@@ -1,63 +1,109 @@
 import bcrypt from "bcryptjs";
-import generateToken from "../config/token";
-import Teacher from "../models/teacher";
+import generateToken from "../config/token.js";
+import Teacher from "../models/teacher.js";
 
-// Register a new teacher
+// REGISTER
 export const registerTeacher = async (req, res) => {
-    const { name, email, password, class: teacherClass, role } = req.body;
-    try {
-        // Check if teacher already exists
-        const existingTeacher = await Teacher.findOne({ email });
-        if (existingTeacher) {
-            return res.status(400).json({ message: "Teacher already exists" });
-        }
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-        // Create new teacher
-        const newTeacher = new Teacher({    
-            name,
-            email,
-            password: hashedPassword,
-            class: teacherClass,
-            role
-        });
-        await newTeacher.save();
-        // Generate token        const token = await generateToken(newTeacher._id);
-        res.status(201).json({ token });
-    } catch (error) {
-        console.log("Error registering teacher", error);
-        res.status(500).json({ message: "Server error" });
+  try {
+    const { name, email, password, classAssigned, role } = req.body;
+
+    if (!name || !email || !password || !classAssigned || !role) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
+    const existingTeacher = await Teacher.findOne({ email });
+    if (existingTeacher) {
+      return res.status(400).json({ message: "Teacher already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newTeacher = new Teacher({
+      name,
+      email,
+      password: hashedPassword,
+      classAssigned,
+      role
+    });
+
+    await newTeacher.save();
+
+    const token = generateToken(newTeacher._id);
+
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax"
+      })
+      .status(201)
+      .json({
+        message: "Registered successfully",
+        teacher: {
+          id: newTeacher._id,
+          name: newTeacher.name,
+          role: newTeacher.role
+        }
+      });
+  } catch (error) {
+    console.log("Error registering teacher", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
-// Login a teacher
+// LOGIN
 export const loginTeacher = async (req, res) => {
+  try {
     const { email, password } = req.body;
-    try {
-        // Find teacher by email
-        const teacher = await Teacher.findOne({ email });
-        if (!teacher) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        // Compare password        const isMatch = await bcrypt.compare(password, teacher.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        // Generate token
-        const token = await generateToken(teacher._id);
-        res.status(200).json({ token });
-    } catch (error) {
-        console.log("Error logging in teacher", error);
-        res.status(500).json({ message: "Server error" });
+
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
+
+    // Normalize email
+    const teacher = await Teacher.findOne({ email: email.toLowerCase() });
+    if (!teacher) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, teacher.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Generate JWT
+    const token = generateToken(teacher._id);
+
+    // Set cookie
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production"
+      })
+      .status(200)
+      .json({
+        message: "Login successful",
+        teacher: {
+          id: teacher._id,
+          name: teacher.name,
+          role: teacher.role
+        }
+      });
+
+  } catch (error) {
+    console.log("Error logging in teacher", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
+// LOGOUT
 export const logOutTeacher = async (req, res) => {
-    try {
-        res.clearCookie("token");
-        res.status(200).json({ message: "Logged out successfully" });
-    } catch (error) {
-        console.log("Error logging out teacher", error);
-        res.status(500).json({ message: "Server error" });
-    }
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 };

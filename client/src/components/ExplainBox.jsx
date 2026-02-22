@@ -79,6 +79,7 @@ export default function ExplainBox() {
       const res = await axios.post(
         "http://localhost:5000/api/assistant-response/explain",
         { prompt },
+        {withCredentials: true}
       );
 
       const responseText = res.data.data.response;

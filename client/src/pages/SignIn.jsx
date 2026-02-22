@@ -15,7 +15,7 @@ export default function SignIn() {
       const res = await axios.post("http://localhost:5000/api/teachers/login", {
         email,
         password,
-      },);
+      },{withCredentials: true});
       nav("/");
       toast.success("Login successful!");
     } catch (error) {

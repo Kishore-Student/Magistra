@@ -75,9 +75,9 @@ export default function QuizGenerator() {
   const downloadPDF = () => {
   const doc = new jsPDF();
 
-  // Register fonts
-  doc.addFileToVFS("Tamil.ttf", NotoSansTamil);
-  doc.addFont("Tamil.ttf", "Tamil", "normal");
+  // // Register fonts
+  // doc.addFileToVFS("Tamil.ttf", NotoSansTamil);
+  // doc.addFont("Tamil.ttf", "Tamil", "normal");
 
 //   doc.addFileToVFS("Hindi.ttf", NotoSansHindi);
 //   doc.addFont("Hindi.ttf", "Hindi", "normal");
